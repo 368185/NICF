@@ -1,0 +1,18 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: 
+  name: nwdb-pvc
+  labels:
+    app: northwind
+  annotations:
+    volume.beta.kubernetes.io/storage-provisioner: dobs.csi.digitalocean.com
+
+spec:
+  accessModes: 
+  - ReadWriteOnce
+  storageClassName: do-block-storage
+  resources:
+    requests:
+      # G - 1000MB, Gi - 1024MB
+      storage: 1Gi

@@ -1,0 +1,85 @@
+---
+apiVersion: v1
+kind: Secret
+metadata: 
+  name: nw-secret
+  labels:
+    app: northwind
+data:
+  MYSQL_ROOT_PASSWORD: Y2hhbmdlaXQ=
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: nwdb-deploy
+  labels:
+    app: northwind
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: northwind
+ 
+  template: 
+    metadata: 
+      name: nwdb-pod
+      labels:
+        app: northwind
+    spec:
+      volumes:
+      - name: nwdb-vol
+        persistentVolumeClaim:
+          claimName: nwdb-pvc
+      - name: share-dir
+        emptyDir: {}
+
+      initContainers:
+      - name: busybox
+        image: busybox
+        volumeMounts: 
+        - name: nwdb-vol
+          mountPath: /scrub 
+        - name: share-dir
+          mountPath: /tmp/share
+        command:
+        # /bin/sh -c "....."
+        - /bin/sh
+        - -c
+        - "test -e /scrub && rm -rf /scrub/..?* /scrub/.[!.]* /scrub/*  && test -z \"$(ls -A /scrub)\" || exit 1"
+
+      containers:
+      - name: nwdb-container
+        image: chukmunnlee/my-nwdb:v3
+        imagePullPolicy: IfNotPresent
+        envFrom:
+        - secretRef:
+            name: nw-secret
+        ports:
+        - name: nwdb-port
+          containerPort: 3306
+        volumeMounts:
+          - name: nwdb-vol
+            mountPath: /var/lib/mysql
+
+---
+
+apiVersion: v1
+kind: Service
+metadata: 
+  name: nwdb-svc
+  labels:
+    app: northwind
+spec:
+  type: ClusterIP
+  selector:
+    app: northwind
+  ports:
+  - port: 3306
+    targetPort: nwdb-port
+
+---
+
+    

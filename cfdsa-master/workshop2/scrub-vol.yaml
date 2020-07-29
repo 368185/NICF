@@ -1,0 +1,10 @@
+initContainers:
+- name: busybox
+  image: busybox
+  command: 
+  - /bin/sh
+  - -c 
+  - "test -e /scrub && rm -rf /scrub/..?* /scrub/.[!.]* /scrub/*  && test -z \"$(ls -A /scrub)\" || exit 1"
+  volumeMounts:
+  - name: mysql-vol
+    mountPath: /scrub
