@@ -1,6 +1,12 @@
 controller: 
     publishedService:
         enabled: true
+    config:
+        enable-opentracing: "true"
+        jaeger-collector-host: "jaeger-agent.istio-system.svc.cluster.local"
+        jaeger-collector-port: "6831"
+        zipkin-collector-host: "zipkin.istio-system.svc.cluster.local"
+        jaeger-collector-port: "9411"    
 defaultBackend:
     enabled: true
     image: 
